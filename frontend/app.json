@@ -1,11 +1,11 @@
 {
   "expo": {
     "name": "StitchFlow",
-    "slug": "stitchflow",
+    "slug": "frontend",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "stitchflow",
+    "scheme": "frontend",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
