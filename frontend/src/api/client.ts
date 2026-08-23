@@ -74,7 +74,10 @@ export async function clearAuth() {
   await AsyncStorage.removeItem(TOKEN_KEY);
   await AsyncStorage.removeItem(USER_KEY);
 }
-export async function getStoredUser() {
-  const u = await AsyncStorage.getItem(USER_KEY);
-  return u ? JSON.parse(u) : null;
+  export async function getStoredUser() {
+    const u = await AsyncStorage.getItem(USER_KEY);
+    if (!u || u === "undefined") {
+        return null;
+    }
+    return JSON.parse(u);
 }
