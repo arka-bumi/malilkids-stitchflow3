@@ -12,7 +12,10 @@
       "android": {
         "buildType": "apk"
       },
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_BACKEND_URL": "https://malilkids-stitchflow3.vercel.app"
+      }
     },
     "production": {
       "autoIncrement": true
