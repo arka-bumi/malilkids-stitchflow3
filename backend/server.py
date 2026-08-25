@@ -172,6 +172,11 @@ def _fmt_tanggal(iso: str) -> str:
 def _record_to_rows(r: dict) -> List[list]:
     """Duplicate the utama row per aktivitas_lain, or 1 row when no lain."""
     lains = r.get("aktivitas_lain_list") or []
+    
+    # --- TAMBAHAN RULE: Urutkan aktivitas lain berdasarkan waktu mulai terkecil (paling awal) ---
+    if lains:
+        lains = sorted(lains, key=lambda x: tm(x.get("waktu_mulai")) or 0)
+
     base = [
         r.get("nama", ""),
         r.get("kode_produksi", ""),
