@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, Pressable, StyleSheet, Modal, FlatList, TextInput } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context"; // <-- 1. Import safe area insets
 import { colors, radius, spacing } from "../theme/colors";
 
 type Props = {
@@ -15,6 +16,7 @@ type Props = {
 };
 
 export function Dropdown({ label, value, options, placeholder = "Pilih...", onChange, onAddNew, testID, required }: Props) {
+  const insets = useSafeAreaInsets(); // <-- 2. Panggil hook insets
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [addMode, setAddMode] = useState(false);
@@ -42,7 +44,8 @@ export function Dropdown({ label, value, options, placeholder = "Pilih...", onCh
 
       <Modal visible={open} transparent animationType="slide" onRequestClose={() => setOpen(false)}>
         <Pressable style={styles.backdrop} onPress={() => setOpen(false)} />
-        <View style={styles.sheet}>
+        {/* 3. Tambahkan paddingBottom dari insets.bottom agar tidak tertutup nav bar HP */}
+        <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, spacing.lg) }]}>
           <View style={styles.sheetHeader}>
             <Text style={styles.sheetTitle}>{label}</Text>
             <Pressable onPress={() => setOpen(false)} testID={`${testID}-close`}>
