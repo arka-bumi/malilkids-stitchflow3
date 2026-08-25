@@ -34,7 +34,22 @@ export default function AdminMgmt() {
     } catch (e: any) { toast.show(e.message, "error"); }
   };
 
-  const del = (a: any) => {
+  const del = async (a: any) => {
+    // --- KHUSUS WEB: Gunakan window.confirm bawaan browser ---
+    if (Platform.OS === "web") {
+      const confirmed = window.confirm(`Hapus admin?\n${a.username}`);
+      if (confirmed) {
+        try { 
+          await api.deleteAdmin(a.id); 
+          toast.show("Terhapus", "success"); 
+          load(); 
+        }
+        catch (e: any) { toast.show(e.message, "error"); }
+      }
+      return;
+    }
+
+    // --- KHUSUS MOBILE (APK / Expo Go) ---
     Alert.alert("Hapus admin?", a.username, [
       { text: "Batal", style: "cancel" },
       { text: "Hapus", style: "destructive", onPress: async () => {
@@ -73,7 +88,8 @@ export default function AdminMgmt() {
                   <Text style={styles.cardName}>{a.username}</Text>
                   <Text style={styles.cardMeta}>{a.nama || "Admin"}</Text>
                 </View>
-                <Pressable onPress={() => del(a)} hitSlop={10} testID={`del-admin-${a.id}`}>
+                <Pressable onPress={() => del(a)} hitSlop={10} testID={`del-admin-${a.id}`}
+                style={Platform.OS === "web" ? ({ cursor: "pointer" } as any) : undefined}>
                   <Ionicons name="trash" size={20} color={colors.error} />
                 </Pressable>
               </View>
