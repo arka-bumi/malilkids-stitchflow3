@@ -27,6 +27,34 @@ export function DateField({ label, value, onChange, testID }: Props) {
     if (Platform.OS !== "ios") setShow(false);
     if (selected) onChange(fmt(selected));
   };
+
+  // --- JIKA DIBUKA DI BROWSER WEB ---
+  if (Platform.OS === "web") {
+    return (
+      <View style={{ marginBottom: spacing.md }}>
+        <Text style={styles.label}>{label}</Text>
+        <View style={styles.field}>
+          <Ionicons name="calendar-outline" size={18} color={colors.onSurfaceSecondary} />
+          <input
+            type="date"
+            value={value || ""}
+            onChange={(e) => onChange(e.target.value)}
+            style={{
+              flex: 1,
+              border: "none",
+              backgroundColor: "transparent",
+              fontSize: "16px",
+              color: colors.onSurface || "#000",
+              outline: "none",
+              fontFamily: "inherit",
+            }}
+          />
+        </View>
+      </View>
+    );
+  }
+
+  // --- JIKA DIBUKA DI MOBILE (ANDROID / IOS) ---
   return (
     <View style={{ marginBottom: spacing.md }}>
       <Text style={styles.label}>{label}</Text>

@@ -30,6 +30,35 @@ export function TimeField({ label, value, onChange, testID, required }: Props) {
     if (selected) onChange(`${pad(selected.getHours())}:${pad(selected.getMinutes())}`);
   };
 
+  // --- JIKA DIBUKA DI BROWSER WEB ---
+  if (Platform.OS === "web") {
+    return (
+      <View style={{ flex: 1 }}>
+        <Text style={styles.label}>
+          {label} {required && <Text style={{ color: colors.error }}>*</Text>}
+        </Text>
+        <View style={styles.field}>
+          <Ionicons name="time-outline" size={18} color={colors.onSurfaceSecondary} />
+          <input
+            type="time"
+            value={value || ""}
+            onChange={(e) => onChange(e.target.value)}
+            style={{
+              flex: 1,
+              border: "none",
+              backgroundColor: "transparent",
+              fontSize: "16px",
+              color: colors.onSurface || "#000",
+              outline: "none",
+              fontFamily: "inherit",
+            }}
+          />
+        </View>
+      </View>
+    );
+  }
+
+  // --- JIKA DIBUKA DI MOBILE (ANDROID / IOS) ---
   return (
     <View style={{ flex: 1 }}>
       <Text style={styles.label}>
