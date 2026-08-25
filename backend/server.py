@@ -415,20 +415,36 @@ def _today_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
 def _validate_record_times(r: dict):
-    us = tm(r.get("waktu_mulai")); ue = tm(r.get("waktu_selesai"))
-    if us is None or ue is None:
-        raise HTTPException(status_code=400, detail="Waktu Mulai/Selesai tidak valid")
-    if ue <= us:
-        raise HTTPException(status_code=400, detail="Waktu Selesai harus lebih besar dari Waktu Mulai")
-    # For lain_saja, aktivitas_lain_list items align with record time; skip inner-range check
-    if r.get("type") == "lain_saja":
-        return
-    for l in r.get("aktivitas_lain_list") or []:
-        ls = tm(l.get("waktu_mulai")); le = tm(l.get("waktu_selesai"))
-        if ls is None or le is None or le <= ls:
-            raise HTTPException(status_code=400, detail=f"Waktu Aktivitas Lain '{l.get('nama','')}' tidak valid")
-        if ls < us or le > ue:
-            raise HTTPException(status_code=400, detail=f"Aktivitas Lain '{l.get('nama','')}' harus di dalam durasi Aktivitas Utama")
+        us = tm(r.get("waktu_mulai")); ue = tm(r.get("waktu_selesai"))
+        if us is None or ue is None:
+            raise HTTPException(status_code=400, detail="Waktu Mulai/Selesai tidak valid")
+        if ue <= us:
+            raise HTTPException(status_code=400, detail="Waktu Selesai harus lebih besar dari Waktu Mulai")
+        
+        lains = r.get("aktivitas_lain_list") or []
+        
+        # Validasi antar aktivitas lain agar tidak saling tumpang tindih
+        for i in range(len(lains)):
+            for j in range(i + 1, len(lains)):
+                li = lains[i]; lj = lains[j]
+                lis = tm(li.get("waktu_mulai")); lie = tm(li.get("waktu_selesai"))
+                ljs = tm(lj.get("waktu_mulai")); lje = tm(lj.get("waktu_selesai"))
+                if lis is not None and lie is not None and ljs is not None and lje is not None:
+                    if overlap(lis, lie, ljs, lje):
+                        raise HTTPException(
+                            status_code=400,
+                            detail=f"Waktu Aktivitas Lain '{li.get('nama','')}' bertabrakan dengan '{lj.get('nama','')}'"
+                        )
+
+        # For lain_saja, aktivitas_lain_list items align with record time; skip inner-range check
+        if r.get("type") == "lain_saja":
+            return
+        for l in lains:
+            ls = tm(l.get("waktu_mulai")); le = tm(l.get("waktu_selesai"))
+            if ls is None or le is None or le <= ls:
+                raise HTTPException(status_code=400, detail=f"Waktu Aktivitas Lain '{l.get('nama','')}' tidak valid")
+            if ls < us or le > ue:
+                raise HTTPException(status_code=400, detail=f"Aktivitas Lain '{l.get('nama','')}' harus di dalam durasi Aktivitas Utama")
 
 async def _check_overlap_with_existing(user_id: str, tanggal: str, record: dict, exclude_id: Optional[str] = None):
     us = tm(record.get("waktu_mulai")); ue = tm(record.get("waktu_selesai"))

@@ -121,6 +121,25 @@ export default function FormRecord() {
       if ((toMin(l.waktu_selesai) || 0) <= (toMin(l.waktu_mulai) || 0)) return toast.show(`Waktu '${l.nama}' tidak valid`, "error");
     }
 
+    // Validasi agar antar Aktivitas Lain tidak saling tumpang tindih (overlap)
+    for (let i = 0; i < lainList.length; i++) {
+      const a = lainList[i];
+      const aStart = toMin(a.waktu_mulai) || 0;
+      const aEnd = toMin(a.waktu_selesai) || 0;
+      for (let j = i + 1; j < lainList.length; j++) {
+        const b = lainList[j];
+        const bStart = toMin(b.waktu_mulai) || 0;
+        const bEnd = toMin(b.waktu_selesai) || 0;
+        
+        // Logika overlap: aStart < bEnd dan bStart < aEnd
+        if (aStart < bEnd && bStart < aEnd) {
+          const namaA = a.nama === LAINNYA ? (a.customNama || "Aktivitas Lain") : a.nama;
+          const namaB = b.nama === LAINNYA ? (b.customNama || "Aktivitas Lain") : b.nama;
+          return toast.show(`Waktu bertabrakan antara '${namaA}' dan '${namaB}'`, "error");
+        }
+      }
+    }
+
     // Real-time gap check (non-blocking)
     if (!editMode && !ignoreGap) {
       const otherRecords = todaysRecords.filter((r) => !editMode || r.id !== params.edit_id);
