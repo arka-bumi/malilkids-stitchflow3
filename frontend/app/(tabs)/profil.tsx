@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Pressable, Alert } from "react-native";
+import { View, Text, StyleSheet, Pressable, Alert, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -11,7 +11,18 @@ export default function Profil() {
   const [user, setUser] = useState<any>(null);
   useEffect(() => { getStoredUser().then(setUser); }, []);
 
-  const logout = () => {
+  const logout = async () => {
+    // --- KHUSUS WEB: Gunakan window.confirm bawaan browser ---
+    if (Platform.OS === "web") {
+      const confirmed = window.confirm("Keluar?\nAnda akan keluar dari akun.");
+      if (confirmed) {
+        await clearAuth();
+        router.replace("/");
+      }
+      return;
+    }
+
+    // --- KHUSUS MOBILE (APK / Expo Go) ---
     Alert.alert("Keluar?", "Anda akan keluar dari akun.", [
       { text: "Batal", style: "cancel" },
       { text: "Keluar", style: "destructive", onPress: async () => { await clearAuth(); router.replace("/"); } },
@@ -32,7 +43,14 @@ export default function Profil() {
           <Text style={styles.team}>Tim {user?.tim || "-"}</Text>
         </View>
 
-        <Pressable style={styles.row} onPress={logout} testID="btn-logout">
+        <Pressable 
+          style={[
+            styles.row, 
+            Platform.OS === "web" && ({ cursor: "pointer" } as any)
+          ]} 
+          onPress={logout} 
+          testID="btn-logout"
+        >
           <Ionicons name="log-out-outline" size={22} color={colors.error} />
           <Text style={[styles.rowText, { color: colors.error }]}>Keluar</Text>
         </Pressable>
