@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { View, Text, StyleSheet, Pressable, ScrollView, RefreshControl, ActivityIndicator, Modal, Alert } from "react-native";
+import { View, Text, StyleSheet, Pressable, ScrollView, RefreshControl, ActivityIndicator, Modal, Alert, Platform } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -178,7 +178,23 @@ function RecordCard({ record, gapWarn, expanded, onToggle, onReload }: any) {
   const toast = useToast();
   const isIstirahat = record.type === "istirahat";
   const modeLabel = record.mode === "khusus_pagi" ? "Khusus Pagi" : record.mode === "khusus_malam" ? "Lembur" : null;
-  const del = () => {
+  const del = async () => {
+    // --- KHUSUS WEB: Gunakan window.confirm bawaan browser ---
+    if (Platform.OS === "web") {
+      const msg = `Hapus record?\n${record.aktivitas_utama || record.aktivitas_lain_list?.[0]?.nama} (${record.waktu_mulai}-${record.waktu_selesai})`;
+      const confirmed = window.confirm(msg);
+      if (confirmed) {
+        try { 
+          await api.deleteRecord(record.id); 
+          toast.show("Terhapus", "success"); 
+          onReload(); 
+        }
+        catch (e: any) { toast.show(e.message, "error"); }
+      }
+      return;
+    }
+
+    // --- KHUSUS MOBILE (APK / Expo Go) ---
     Alert.alert("Hapus record?", `${record.aktivitas_utama || record.aktivitas_lain_list?.[0]?.nama} (${record.waktu_mulai}-${record.waktu_selesai})`, [
       { text: "Batal", style: "cancel" },
       { text: "Hapus", style: "destructive", onPress: async () => {
@@ -187,6 +203,7 @@ function RecordCard({ record, gapWarn, expanded, onToggle, onReload }: any) {
       } },
     ]);
   };
+
   return (
     <Pressable
       style={[styles.card, gapWarn && styles.cardWarn, isIstirahat && styles.cardIstirahat]}
@@ -230,7 +247,15 @@ function RecordCard({ record, gapWarn, expanded, onToggle, onReload }: any) {
                 <Ionicons name="create" size={16} color="#fff" />
                 <Text style={styles.smallBtnText}>Edit</Text>
               </Pressable>
-              <Pressable style={[styles.smallBtn, { backgroundColor: colors.error }]} onPress={del} testID={`del-${record.id}`}>
+              <Pressable 
+                style={[
+                  styles.smallBtn, 
+                  { backgroundColor: colors.error },
+                  Platform.OS === "web" && ({ cursor: "pointer" } as any)
+                ]} 
+                onPress={del} 
+                testID={`del-${record.id}`}
+              >
                 <Ionicons name="trash" size={16} color="#fff" />
                 <Text style={styles.smallBtnText}>Hapus</Text>
               </Pressable>
